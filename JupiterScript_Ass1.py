@@ -22,8 +22,8 @@ data2 = pd.read_excel('WieringermeerData_Meteo.xlsx')
 
 
 #display(data2)
-rain = data2['rain_station'].values
-pEV = data2['pEV'].values
+rain = (data2['rain_station'].values)*1000
+pEV = (data2['pEV'].values)*1000
 temp = data2['temp'].values
 
 # In[42]:
@@ -104,7 +104,7 @@ def dSdt(t, Y):
 tOut = np.linspace(0, tm-1, tm)               # time
 
 # Initial case, 10 rabbits, 5 foxes
-Y0 = np.array([5, 5])
+Y0 = np.array([400, 4000])
 mt.tic()
 t_span = [tOut[0], tOut[-1]]
 YODE = sp.solve_ivp(dSdt, t_span, Y0, t_eval=tOut, 
@@ -115,9 +115,22 @@ YODE = sp.solve_ivp(dSdt, t_span, Y0, t_eval=tOut,
 rODE = YODE.y[0,:]
 fODE = YODE.y[1,:]
 
+L_cl = a*((rODE-Sclmin)/(Sclmax-Sclmin))**bcl
+L_wb = a*((fODE-Swbmin)/(Swbmax-Swbmin))**bwb
+beta = beta0*((rODE-Sclmin)/(Sclmax-Sclmin))
+Q = (beta*L_cl+L_wb)
+
+
+plt.figure()
+plt.plot(tOut,Q,color='black')
+plt.xlabel('time (year)')
+plt.ylabel('Q [mm/d]')
+plt.title('Discharge over time')
+plt.grid()
 
 # In[53]:
 
 
+plt.figure()
 plt.plot(tOut, rODE, 'r-', label='RODE')
 plt.plot(tOut, fODE, 'b-', label='FODE')
